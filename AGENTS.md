@@ -28,16 +28,22 @@ call paths in one call. Don't re-verify its results with grep.
 | Dependency audit | `pip-audit --desc on .` |
 
 - Tests require a bench with the app installed and `bench --site test_site set-config allow_tests true`. Full setup sequence is in `.github/workflows/ci.yml` (bench init → get-app → new-site → install-app → bench build).
-- **CI currently fails at the `Find tests` step** (`grep -rn "def test"` must match at least once). Any first contribution must add a test for CI to pass.
 - README says CI runs on `develop`; the workflow actually triggers on `main` + PRs. Trust the workflow.
 
 ## Layout
 
 - `frappe_app_boilerplate/` is the Python package; `hooks.py` is the extension
-  point (all Frappe hooks — currently every one is commented out). Never patch
-  Frappe core; hook-based extension only.
+  point (all Frappe hooks; `use_json_request_body`, `export_python_type_annotations`,
+  and `require_type_annotated_api_methods` are active, the rest commented stubs).
+  Never patch Frappe core; hook-based extension only.
 - `frappe_app_boilerplate/frappe_app_boilerplate/` is the module dir named in
-  `modules.txt`; DocTypes go in a `doctype/<name>/` subdir under it.
+  `modules.txt`; DocTypes go in a `doctype/<name>/` subdir under it. Ships the
+  Settings DocType (`frappe_app_boilerplate_settings/`) and one example DocType
+  (`boilerplate_example/`, marked DELETE ME AFTER RENAME).
+- All tests subclass `BoilerplateTestSuite` (`frappe_app_boilerplate/tests/`),
+  the app-level base class absorbing the v15/v16 `FrappeTestCase` /
+  `IntegrationTestCase` divergence (ADR 0002). Never subclass framework test
+  classes directly.
 - DB patches: create `frappe_app_boilerplate/patches/<name>.py` AND register it
   in `patches.txt` under `[pre_model_sync]` or `[post_model_sync]`, or it never runs.
 - Frappe is a bench-managed dependency (commented out in `pyproject.toml` on

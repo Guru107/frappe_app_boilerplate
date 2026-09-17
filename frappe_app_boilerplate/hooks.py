@@ -5,6 +5,10 @@ app_description = "Frappe App Boilerplate"
 app_email = "connect@gurudatt.in"
 app_license = "agpl-3.0"
 
+# Send non-GET requests for this app's endpoints as native `application/json`
+# bodies instead of form-encoded, per-key JSON-stringified values.
+use_json_request_body = True
+
 # Apps
 # ------------------
 
@@ -17,9 +21,18 @@ app_license = "agpl-3.0"
 # 		"logo": "/assets/frappe_app_boilerplate/logo.png",
 # 		"title": "Frappe App Boilerplate",
 # 		"route": "/frappe_app_boilerplate",
-# 		"has_permission": "frappe_app_boilerplate.api.permission.has_app_permission"
+# 		"has_permission": "frappe_app_boilerplate.api.permission.has_app_permission",
 # 	}
 # ]
+
+# The dock, the rail down the left of the desk, is a document rather than a hook. Author it in
+# Manage Dock on a developer-mode site and press Export to App, and it is written to
+# `frappe_app_boilerplate/dock/frappe_app_boilerplate/frappe_app_boilerplate.json` for git to carry. An app that ships none has no
+# rail: its sidebar gets a switcher in the header instead.
+#
+# A companion app, one that extends a host app rather than standing on its own, says so with
+# `mount_on` on that same record, and its entries are appended to the host's rail. Mounting keeps
+# the companion off the apps screen, so it takes precedence over any add_to_apps_screen above.
 
 # Includes in <head>
 # ------------------
@@ -64,6 +77,14 @@ app_license = "agpl-3.0"
 # 	"Role": "home_page"
 # }
 
+# Setup Wizard
+# ------------
+
+# open a fresh site's setup in this app's own UI instead of the desk wizard.
+# must be a non-desk route (not under /desk or /app); to customize setup within
+# desk, use setup_wizard_stages / setup_wizard_complete instead.
+# setup_wizard_url = "/frappe_app_boilerplate/setup"
+
 # Generators
 # ----------
 
@@ -94,6 +115,17 @@ app_license = "agpl-3.0"
 # before_uninstall = "frappe_app_boilerplate.uninstall.before_uninstall"
 # after_uninstall = "frappe_app_boilerplate.uninstall.after_uninstall"
 
+# Disable / Enable
+# ----------------
+# Called when this app is logically disabled or re-enabled on a site,
+# without uninstalling it. Use this to hide/restore fields this app adds
+# to other apps' doctypes.
+
+# before_disable = "frappe_app_boilerplate.uninstall.before_disable"
+# after_disable = "frappe_app_boilerplate.uninstall.after_disable"
+# before_enable = "frappe_app_boilerplate.install.before_enable"
+# after_enable = "frappe_app_boilerplate.install.after_enable"
+
 # Integration Setup
 # ------------------
 # To set up dependencies/integrations with other apps
@@ -115,6 +147,11 @@ app_license = "agpl-3.0"
 # To hook into the build process
 
 # after_build = "frappe_app_boilerplate.build.after_build"
+
+# To hook into the build process of other apps
+# The list of apps being built is passed as an argument
+
+# after_app_build = "frappe_app_boilerplate.build.after_app_build"
 
 # Desk Notifications
 # ------------------
@@ -219,6 +256,8 @@ app_license = "agpl-3.0"
 # before_job = ["frappe_app_boilerplate.utils.before_job"]
 # after_job = ["frappe_app_boilerplate.utils.after_job"]
 
+# after_file_upload = ["frappe_app_boilerplate.utils.after_file_upload"]
+
 # User Data Protection
 # --------------------
 
@@ -251,7 +290,10 @@ app_license = "agpl-3.0"
 # ]
 
 # Automatically update python controller files with type annotations for this app.
-# export_python_type_annotations = True
+export_python_type_annotations = True
+
+# Require all whitelisted methods to have type annotations
+require_type_annotated_api_methods = True
 
 # default_log_clearing_doctypes = {
 # 	"Logging DocType Name": 30  # days to retain logs
@@ -261,4 +303,3 @@ app_license = "agpl-3.0"
 # ------------
 # List of apps whose translatable strings should be excluded from this app's translations.
 # ignore_translatable_strings_from = []
-

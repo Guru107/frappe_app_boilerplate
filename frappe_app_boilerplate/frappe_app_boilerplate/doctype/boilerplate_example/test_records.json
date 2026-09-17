@@ -1,0 +1,14 @@
+[
+ {
+  "description": "DELETE ME AFTER RENAME: test record for the starter's example DocType.",
+  "doctype": "Boilerplate Example",
+  "enabled": 1,
+  "title": "Test Example One"
+ },
+ {
+  "description": "DELETE ME AFTER RENAME: test record for the starter's example DocType.",
+  "doctype": "Boilerplate Example",
+  "enabled": 0,
+  "title": "Test Example Two"
+ }
+]
