@@ -10,11 +10,11 @@ test_dependencies = ["Boilerplate Example"]
 
 
 class TestBoilerplateExample(BoilerplateTestSuite):
-	def test_test_records_are_loaded(self):
+	def test_test_records_are_loaded(self) -> None:
 		self.assertTrue(frappe.db.exists("Boilerplate Example", "Test Example One"))
 		self.assertTrue(frappe.db.exists("Boilerplate Example", "Test Example Two"))
 
-	def test_crud_through_the_framework(self):
+	def test_crud_through_the_framework(self) -> None:
 		doc = frappe.get_doc(
 			{
 				"doctype": "Boilerplate Example",

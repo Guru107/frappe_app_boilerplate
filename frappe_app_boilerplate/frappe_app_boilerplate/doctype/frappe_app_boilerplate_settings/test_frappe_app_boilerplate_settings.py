@@ -4,11 +4,11 @@ from frappe_app_boilerplate.tests import BoilerplateTestSuite
 
 
 class TestFrappeAppBoilerplateSettings(BoilerplateTestSuite):
-	def test_settings_singleton_loads_with_default(self):
+	def test_settings_singleton_loads_with_default(self) -> None:
 		settings = frappe.get_doc("Frappe App Boilerplate Settings")
 		self.assertEqual(settings.default_greeting, "Hello")
 
-	def test_settings_singleton_save_and_reload(self):
+	def test_settings_singleton_save_and_reload(self) -> None:
 		settings = frappe.get_doc("Frappe App Boilerplate Settings")
 		settings.default_greeting = "Hello from tests"
 		settings.save()

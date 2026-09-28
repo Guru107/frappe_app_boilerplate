@@ -33,6 +33,27 @@ jobs:
           pip install semgrep
           semgrep ci --config ./frappe-semgrep-rules/rules --config r/python.lang.correctness
 
+  typecheck:
+    # basedmypy per ADR 0003: scoped to the app's own modules via the files=
+    # list in pyproject.toml; frappe itself is not installed here (framework
+    # imports are covered by ignore_missing_imports).
+    name: 'Type Check (basedmypy)'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.14'
+          cache: pip
+
+      - name: Install basedmypy
+        # Keep in sync with [tool.bench.dev-dependencies] in pyproject.toml.
+        run: pip install "basedmypy~=2.10"
+
+      - name: Run basedmypy
+        run: mypy
+
   deps-vulnerable-check:
     name: 'Vulnerable Dependency Check'
     runs-on: ubuntu-latest

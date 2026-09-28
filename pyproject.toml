@@ -17,7 +17,9 @@ build-backend = "flit_core.buildapi"
 
 # These dependencies are only installed when developer mode is enabled
 [tool.bench.dev-dependencies]
-# package_name = "~=1.1.0"
+# Type checking per ADR 0003 (mirrors frappe core's dev extras). Add types-*
+# stubs here as the app gains typed third-party dependencies.
+basedmypy = "~=2.10"
 
 # These apt dependencies will be installed from Ubuntu repositories when you host your app on Frappe Cloud
 [deploy.dependencies.apt]
@@ -36,6 +38,16 @@ select = [
     "UP",
     "B",
     "RUF",
+    # Expansion beyond the bench template (ADR 0003): simplifications,
+    # complexity, pylint errors/warnings (selected PL: PLE+PLW; the convention
+    # and refactor tiers fight Frappe idioms and duplicate C90), annotations.
+    "SIM",
+    "C90",
+    "PLE",
+    "PLW",
+    "ANN",
+    # S rules are deliberately never selected: semgrep owns security scanning
+    # per ADR 0001.
 ]
 ignore = [
     "B017", # assertRaises(Exception) - should be more specific
@@ -63,3 +75,38 @@ typing-modules = ["frappe.types.DF"]
 quote-style = "double"
 indent-style = "tab"
 docstring-code-format = true
+
+[tool.mypy]
+# basedmypy, configured like frappe core's own setup (ADR 0003): non-strict,
+# with an explicit files= list scoped to this app's own modules rather than
+# the whole tree. Widen `files` as the app grows.
+strict = false
+pretty = true
+incremental = true
+sqlite_cache = true
+# basedmypy flips these Any-strictness flags on by default; they fight
+# frappe's dynamism (framework imports resolve to Any when the checker runs
+# without a bench, and `frappe.whitelist` is untyped). Frappe core makes the
+# same trade-off in its own [tool.mypy] config.
+disallow_any_expr = false
+disallow_any_unimported = false
+disallow_subclassing_any = false
+disallow_any_decorated = false
+disallow_untyped_decorators = false
+files = [
+    "frappe_app_boilerplate/api.py",
+    "frappe_app_boilerplate/hooks.py",
+    "frappe_app_boilerplate/frappe_app_boilerplate/",
+    "frappe_app_boilerplate/tests/",
+]
+exclude = [
+    '/test_.+\.py$',
+    '^frappe_app_boilerplate/patches',
+]
+
+# Framework internals are not resolvable in every checking environment (the CI
+# linter leg runs without a bench); in a bench env frappe resolves and is
+# checked against normally.
+[[tool.mypy.overrides]]
+module = ["frappe", "frappe.*"]
+ignore_missing_imports = true
