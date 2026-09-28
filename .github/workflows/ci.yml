@@ -15,7 +15,14 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-    name: Server
+      matrix:
+        # Supported Frappe branches (ADR 0002). To drop v15 at EOL, delete
+        # "version-15" here — this list is the only place a branch is removed.
+        # (The smoke leg below pins the newest branch; bump it when a new
+        # major is added.) Both legs deliberately run Python 3.14 / Node 24 /
+        # MariaDB 11.8 — the v15-on-3.14 combination is ours to own (ADR 0002).
+        frappe_branch: [version-15, version-16]
+    name: Server (Frappe ${{ matrix.frappe_branch }})
 
     services:
       redis-cache:
@@ -83,7 +90,7 @@ jobs:
       - name: Setup
         run: |
           pip install frappe-bench
-          bench init --skip-redis-config-generation --skip-assets --python "$(which python)" ~/frappe-bench
+          bench init --frappe-branch ${{ matrix.frappe_branch }} --skip-redis-config-generation --skip-assets --python "$(which python)" ~/frappe-bench
 
       - name: Install
         working-directory: /home/runner/frappe-bench
@@ -101,5 +108,75 @@ jobs:
         run: |
           bench --site test_site set-config allow_tests true
           bench --site test_site run-tests --app frappe_app_boilerplate
+        env:
+          TYPE: server
+
+  smoke-soft-link:
+    # Install contract smoke leg: the app must install identically with
+    # `bench get-app --soft-link`. Soft-link differs from a normal get-app
+    # only in the fetch step, so one leg suffices. Runs against the newest
+    # supported Frappe branch (keep in sync with the tests matrix above).
+    runs-on: ubuntu-latest
+    name: Smoke (soft-link, Frappe version-16)
+
+    services:
+      redis-cache:
+        image: redis:alpine
+        ports:
+          - 13000:6379
+      redis-queue:
+        image: redis:alpine
+        ports:
+          - 11000:6379
+      mariadb:
+        image: mariadb:11.8
+        env:
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+        options: --health-cmd="mariadb-admin ping" --health-interval=5s --health-timeout=2s --health-retries=3
+
+    steps:
+      - name: Clone
+        uses: actions/checkout@v6
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.14'
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          check-latest: true
+
+      - name: Install MariaDB Client
+        run: |
+          sudo apt update
+          sudo apt-get install mariadb-client
+
+      - name: Setup
+        run: |
+          pip install frappe-bench
+          bench init --frappe-branch version-16 --skip-redis-config-generation --skip-assets --python "$(which python)" ~/frappe-bench
+
+      - name: Install (soft-link)
+        working-directory: /home/runner/frappe-bench
+        run: |
+          bench get-app --soft-link frappe_app_boilerplate $GITHUB_WORKSPACE
+          bench setup requirements --dev
+          bench new-site --db-root-password root --admin-password admin test_site
+          bench --site test_site install-app frappe_app_boilerplate
+          bench --site test_site migrate
+          bench build
+        env:
+          CI: 'Yes'
+
+      - name: Run Smoke Test
+        working-directory: /home/runner/frappe-bench
+        run: |
+          bench --site test_site set-config allow_tests true
+          bench --site test_site run-tests --app frappe_app_boilerplate --module frappe_app_boilerplate.frappe_app_boilerplate.doctype.frappe_app_boilerplate_settings.test_frappe_app_boilerplate_settings
         env:
           TYPE: server
