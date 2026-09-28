@@ -12,6 +12,66 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  commit-lint:
+    # Conventional commits on PR commits, hrms pattern: release-notes-generatable
+    # history for derived apps.
+    name: 'Semantic Commits'
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 200
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          check-latest: true
+
+      - name: Check commit titles
+        run: |
+          npm install @commitlint/cli @commitlint/config-conventional
+          npx commitlint --verbose --from ${{ github.event.pull_request.base.sha }} --to ${{ github.event.pull_request.head.sha }}
+
+  secrets:
+    # gitleaks: secrets scanning is a separate category from semgrep's
+    # Python-code security scanning (ADR 0001, amended scope note). Full
+    # history scan so secrets committed without pre-commit installed are
+    # still caught.
+    name: 'Secrets Scan (gitleaks)'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Install gitleaks
+        # Pinned; keep in sync with the gitleaks rev in .pre-commit-config.yaml.
+        run: |
+          GITLEAKS_VERSION=8.28.0
+          curl -sSfL "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" -o gitleaks.tar.gz
+          tar -xzf gitleaks.tar.gz gitleaks
+          sudo install gitleaks /usr/local/bin/
+
+      - name: Scan for secrets
+        run: gitleaks git --redact --verbose .
+
+  markdownlint:
+    # markdownlint-cli2 against the repo config (.markdownlint-cli2.jsonc).
+    name: 'Markdown Lint'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          check-latest: true
+
+      - name: Run markdownlint-cli2
+        run: npx --yes markdownlint-cli2 "**/*.md"
+
   linter:
     name: 'Frappe Linter'
     runs-on: ubuntu-latest

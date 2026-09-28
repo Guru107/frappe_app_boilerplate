@@ -15,6 +15,7 @@ shell=True`, insecure deserialization, SSRF-prone HTTP calls, etc.), which
 is Bandit's traditional territory.
 
 The two obvious options were:
+
 1. Add `bandit` as a second, independent tool (its own config file,
    `# nosec` suppression syntax, separate pre-commit hook, separate CI step).
 2. Extend the semgrep invocation we already run with the `p/bandit` registry

@@ -8,7 +8,7 @@ frappe.io). Time-sensitive facts carry their verification date.
 ## 1. The official template: what `bench new-app` generates today
 
 Source: `frappe/utils/boilerplate.py` on `frappe/frappe@master`
-(https://github.com/frappe/frappe/blob/master/frappe/utils/boilerplate.py), read 2026-09-17.
+(<https://github.com/frappe/frappe/blob/master/frappe/utils/boilerplate.py>), read 2026-09-17.
 
 **Interactive prompts** (`_get_user_inputs`): app title (validated against
 `APP_TITLE_PATTERN`), description, publisher, email (validated), license (choice list fetched
@@ -109,7 +109,7 @@ creates `patches/<doctype>/...` files **and appends the dotted path to `patches.
 ## 2. Current Frappe version landscape (as of 2026-09-17)
 
 **Current stable: v16.** Latest tags from the GitHub Releases API
-(https://api.github.com/repos/frappe/frappe/releases, fetched 2026-09-17):
+(<https://api.github.com/repos/frappe/frappe/releases>, fetched 2026-09-17):
 
 - `v16.34.0` — published 2026-09-15, target branch `version-16`
 - `v15.121.0` — published 2026-09-15, target branch `version-15`
@@ -117,18 +117,18 @@ creates `patches/<doctype>/...` files **and appends the dotted path to `patches.
 Releases are cut roughly weekly by `frappe-pr-bot` per major-version branch; notes are
 LLM-summarized (disclosed in the release body).
 
-**Support/EOL picture** (https://frappe.io/support-versions, fetched 2026-09-17 — official
+**Support/EOL picture** (<https://frappe.io/support-versions>, fetched 2026-09-17 — official
 warranty/support page for ERPNext & Frappe Framework *and* Frappe HR):
 
 | Version | EOL | Branch |
-|---|---|---|
+| --- | --- | --- |
 | v14 | **31 Jan 2026 — already EOL** | `version-14` |
 | v15 | End of 2027 (planned) | `version-15` |
 | v16 | End of 2029 (planned) | `version-16` |
 | bleeding edge | n/a | `develop` |
 
 v16 stable shipped 2026-01-12 (postponed from 2025-12-06; per the official release-date
-thread https://discuss.frappe.io/t/erp-v16-clarifications/158512 — community forum, semi-primary).
+thread <https://discuss.frappe.io/t/erp-v16-clarifications/158512> — community forum, semi-primary).
 Python 3.14 / Node 24 / MariaDB 11.8 is the v16 CI stack (boilerplate ci.yml, hrms ci.yml);
 v15-era apps still run Python 3.10 / Node 18 (insights compat-matrix.yml gates on this).
 
@@ -141,11 +141,11 @@ on `develop`. Lending stable targets v15.
 
 - Runtime version check (the pattern the Marketplace docs prescribe):
   `Version(frappe.__version__).major >= N` via `semantic_version`
-  (https://docs.frappe.io/cloud/marketplace/app-authoring-guidelines).
+  (<https://docs.frappe.io/cloud/marketplace/app-authoring-guidelines>).
 - Dependency pinning per branch: `frappe/hrms` `pyproject.toml` has
   `[tool.bench.frappe-dependencies]` with `frappe = ">=17.0.0-dev,<18.0.0"` and same for
   erpnext — i.e. the develop branch pins to the next major; release branches pin to theirs.
-  (https://github.com/frappe/hrms/blob/master/pyproject.toml)
+  (<https://github.com/frappe/hrms/blob/master/pyproject.toml>)
 - Patches organized by major version: `frappe/hrms` has `hrms/patches/v14_0/`, `v15_0/`,
   `v16_0/`, `post_install/` directories (repo tree).
 - CI compatibility matrix: `frappe/insights` `.github/workflows/compat-matrix.yml` runs a
@@ -226,7 +226,7 @@ Verified active maintenance: all three below have workflows/tags/branches update
 (hrms: mariadb 11.8 + python 3.14 CI; insights: compat matrix vs version-15/16; builder:
 still shipping, though its CI stack is older).
 
-### frappe/hrms (https://github.com/frappe/hrms)
+### frappe/hrms (<https://github.com/frappe/hrms>)
 
 - **Layout extras over `bench new-app`**: `overrides/` (doctype class overrides),
   `mixins/`, `regional/` (India, UAE), `api/`, `setup.py` (install-time setup, separate
@@ -272,7 +272,7 @@ still shipping, though its CI stack is older).
   ruff-pre-commit v0.3.7 (linter+format only, no separate isort hook), **no eslint**.
   Evidence that even first-party apps lag the generated template here.
 
-### frappe/insights (https://github.com/frappe/insights)
+### frappe/insights (<https://github.com/frappe/insights>)
 
 - Workflows: `server-tests.yml` (against `FRAPPE_BRANCH: develop`, mariadb 10.6, py3.14/node24,
   compileall gate), **`compat-matrix.yml`** (see §2 — the only first-party app found with an
@@ -287,7 +287,7 @@ still shipping, though its CI stack is older).
   `# nosemgrep` suppressions) because its data sources open their own DB connections — a
   worked example of subclassing the framework base class per app.
 
-### frappe/builder (https://github.com/frappe/builder)
+### frappe/builder (<https://github.com/frappe/builder>)
 
 - Ships `docker/` + `scripts/init.sh` dev setup, `frontend/` Vite+Vue app, **Cypress** e2e
   (`frontend/cypress/`, `ui-tests.yml`), `docker-image.yml`, `on_release.yml`,
@@ -376,7 +376,7 @@ modules, and use `before_tests` hooks.py entry for global test bootstrap.
 
 There is no official devcontainer *inside* app repos; the official paths are:
 
-- **frappe/frappe_docker** (https://github.com/frappe/frappe_docker):
+- **frappe/frappe_docker** (<https://github.com/frappe/frappe_docker>):
   `devcontainer-example/devcontainer.json` + `docker-compose.yml` (VS Code devcontainer:
   `frappe/bench`-based compose stack, forwards 8000/9000/6787, `remoteUser: frappe`,
   workspace `/workspace/development`), `development/installer.py`, `development/vscode-example/`
@@ -418,7 +418,7 @@ There is no official devcontainer *inside* app repos; the official paths are:
   `app_include_icons` / `web_include_icons` for SVG icon sheets (erpnext). The boilerplate
   gitkeep comment confirms `public/` must exist for asset symlinking.
 - **Translations — sources disagree / in transition**: the docs page
-  (https://docs.frappe.io/framework/user/en/translations, updated 2026-02-17) still
+  (<https://docs.frappe.io/framework/user/en/translations>, updated 2026-02-17) still
   describes the **CSV-in-`translations/`** workflow (`bench get-untranslated`,
   `bench update-translations`), but the framework repo has a `frappe/gettext/` module +
   `babel_extractors.csv` + `crowdin.yml`, and hrms ships **`locale/*.po`** (38 files) with a
@@ -467,10 +467,10 @@ There is no official devcontainer *inside* app repos; the official paths are:
 - **There is no official cookiecutter/copier template** for server-side Frappe apps from the
   frappe org. `bench new-app` (§1) *is* the generator, and the Marketplace guidelines treat
   its output as the expected baseline.
-- **frappe/frappe-ui-starter** (https://github.com/frappe/frappe-ui-starter): official GitHub
+- **frappe/frappe-ui-starter** (<https://github.com/frappe/frappe-ui-starter>): official GitHub
   template repo, but only for the **Vue 3 + Frappe UI frontend** of a custom app — a
   complement to `bench new-app`, not a replacement. (This is the upstream of the `frontend/`
-  + `frappe-ui/` pattern seen in hrms/builder/insights.)
+  - `frappe-ui/` pattern seen in hrms/builder/insights.)
 - **Community templates** (GitHub search, 2026-09-17 — all small/low-adoption, treat as
   secondary sources):
   - `proceduretech/frappe-cookiecutter` — cookiecutter, last commit 2023-11, **stale**

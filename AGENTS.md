@@ -19,7 +19,7 @@ call paths in one call. Don't re-verify its results with grep.
 ## Commands
 
 | Task | Command |
-|---|---|
+| --- | --- |
 | Lint + format everything | `pre-commit run --all-files` |
 | Tests | `bench --site test_site run-tests --app frappe_app_boilerplate` |
 | One test module | add `--module frappe_app_boilerplate.path.to.module` |
@@ -27,7 +27,10 @@ call paths in one call. Don't re-verify its results with grep.
 | Security scan (as CI) | `semgrep ci --config <frappe-semgrep-rules>/rules --config r/python.lang.correctness` |
 | Dependency audit | `pip-audit --desc on .` |
 
-- Tests require a bench with the app installed and `bench --site test_site set-config allow_tests true`. Full setup sequence is in `.github/workflows/ci.yml` (bench init → get-app → new-site → install-app → bench build).
+- Tests require a bench with the app installed and
+  `bench --site test_site set-config allow_tests true`. Full setup sequence is
+  in `.github/workflows/ci.yml` (bench init → get-app → new-site → install-app
+  → bench build).
 - README says CI runs on `develop`; the workflow actually triggers on `main` + PRs. Trust the workflow.
 
 ## Layout
@@ -54,9 +57,12 @@ call paths in one call. Don't re-verify its results with grep.
 - Python ≥ 3.14 (ruff `target-version = "py314"`). Ruff: **tab indentation**,
   double quotes, line-length 110, `E501`/`F401` ignored.
 - Pre-commit runs ruff (import-sort + lint + format), prettier (js/vue/scss),
-  and eslint 8. Prettier/eslint exclude `public/dist/`, `templates/includes/`,
-  `public/js/lib/`, and any path containing `boilerplate` — files there are
-  intentionally unlinted (may contain jinja or vendored bundles).
+  eslint 8, gitleaks (secrets), and markdownlint-cli2 (config in
+  `.markdownlint-cli2.jsonc`). CI additionally runs commitlint
+  (config-conventional) on PR commits. Prettier/eslint exclude `public/dist/`,
+  `templates/includes/`, `public/js/lib/`, and any path containing
+  `boilerplate` — files there are intentionally unlinted (may contain jinja or
+  vendored bundles).
 - No Bandit: ADR 0001 deliberately consolidated Python security scanning into
   semgrep. Suppress findings with `# nosemgrep`, not `# nosec`. Don't add a
   second security scanner without revisiting the ADR. Note: the ADR mentions
@@ -71,7 +77,9 @@ Issues are tracked as GitHub issues via the `gh` CLI. See `docs/agents/issue-tra
 
 ### Triage labels
 
-The five canonical triage roles are used as-is (`needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`). See `docs/agents/triage-labels.md`.
+The five canonical triage roles are used as-is (`needs-triage`, `needs-info`,
+`ready-for-agent`, `ready-for-human`, `wontfix`). See
+`docs/agents/triage-labels.md`.
 
 ### Domain docs
 

@@ -63,6 +63,16 @@ repos:
                 frappe_app_boilerplate/public/js/lib/.*
             )$
 
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.28.0
+    hooks:
+      - id: gitleaks
+
+  - repo: https://github.com/DavidAnson/markdownlint-cli2
+    rev: v0.18.1
+    hooks:
+      - id: markdownlint-cli2
+
 ci:
     autoupdate_schedule: weekly
     skip: []

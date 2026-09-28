@@ -7,8 +7,8 @@ A glossary of terms used in this repo. Implementation details live in code and
 
 **Marketplace-ready**
 An app that satisfies the *documented* Frappe Marketplace requirements
-(https://docs.frappe.io/cloud/marketplace/app-authoring-guidelines,
-https://docs.frappe.io/cloud/marketplace/marketplace-guidelines): a **mandatory**
+(<https://docs.frappe.io/cloud/marketplace/app-authoring-guidelines>,
+<https://docs.frappe.io/cloud/marketplace/marketplace-guidelines>): a **mandatory**
 passing CI, a Settings DocType for global config, version-conditional support for
 the current stable Frappe (v16 as of Sept 2026; v15 supported to end-2027),
 hook-based extension (no core overrides — the ban covers overriding core *pages*
