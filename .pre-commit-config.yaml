@@ -1,4 +1,6 @@
-exclude: 'node_modules|.git'
+# docs/upstream/ holds a byte-exact vendored copy of upstream's app generator
+# (the drift-check baseline) — linters/formatters must never touch it.
+exclude: 'node_modules|.git|^docs/upstream/'
 default_stages: [pre-commit]
 fail_fast: false
 

@@ -11,7 +11,9 @@ module directories, modules.txt, pyproject.toml, hooks strings, workflow
 files, the pre-commit and markdownlint configs, the Settings and example
 DocTypes, README and docs — and renames paths containing the template name.
 Only git-tracked files are touched. The template-only verification workflow
-(.github/workflows/rename-verification.yml) and the template-only README
+(.github/workflows/rename-verification.yml), the upstream drift-tracking
+tooling (.github/workflows/upstream-drift.yml, check_upstream_drift.py and the
+vendored baseline docs/upstream/boilerplate.py) and the template-only README
 section are removed, since they serve the template, not the derived app.
 
 The script refuses to run when no "boilerplate" references remain, so an
@@ -55,6 +57,17 @@ TEMPLATE_ONLY_BEGIN = "<!-- TEMPLATE-ONLY:BEGIN -->"
 TEMPLATE_ONLY_END = "<!-- TEMPLATE-ONLY:END -->"
 
 VERIFICATION_WORKFLOW = ".github/workflows/rename-verification.yml"
+
+# Template-only machinery removed from the derived app: the verification
+# workflow and the upstream drift-tracking tooling (workflow, check script,
+# vendored baseline). Derived apps intentionally diverge from the bench
+# new-app template, so drift against it would be pure noise for them.
+TEMPLATE_ONLY_PATHS = (
+	VERIFICATION_WORKFLOW,
+	".github/workflows/upstream-drift.yml",
+	"check_upstream_drift.py",
+	"docs/upstream/boilerplate.py",
+)
 
 # Paths that intentionally keep "boilerplate" references after a rename: this
 # script (it must know the strings it replaces) and the historical research
@@ -140,8 +153,14 @@ def tracked_files(root: Path) -> list[str]:
 
 
 def is_excluded(rel_path: str) -> bool:
-	return rel_path in EXCLUDED_FILES or any(
-		rel_path == d or rel_path.startswith(f"{d}/") for d in EXCLUDED_DIRS
+	# Template-only paths are excluded from rewriting/moving because they are
+	# deleted outright further below (docs/upstream/boilerplate.py's filename
+	# would otherwise be renamed and leak the vendored baseline into the
+	# derived app).
+	return (
+		rel_path in EXCLUDED_FILES
+		or rel_path in TEMPLATE_ONLY_PATHS
+		or any(rel_path == d or rel_path.startswith(f"{d}/") for d in EXCLUDED_DIRS)
 	)
 
 
@@ -340,16 +359,17 @@ def main() -> int:
 	changed = rewrite_contents(root, files, replacements)
 	moved = rename_paths(root, files, replacements, args.app_name, scrub_title)
 
-	try:
-		subprocess.run(
-			["git", "rm", "-q", "-f", VERIFICATION_WORKFLOW],
-			cwd=root,
-			check=True,
-			capture_output=True,
-		)
-		print(f"Removed template-only workflow {VERIFICATION_WORKFLOW}")
-	except subprocess.CalledProcessError:
-		pass
+	for template_only_path in TEMPLATE_ONLY_PATHS:
+		try:
+			subprocess.run(
+				["git", "rm", "-q", "-f", template_only_path],
+				cwd=root,
+				check=True,
+				capture_output=True,
+			)
+			print(f"Removed template-only path {template_only_path}")
+		except subprocess.CalledProcessError:
+			pass
 
 	if args.license and args.license != CURRENT_LICENSE:
 		update_license_file(root, args.license)

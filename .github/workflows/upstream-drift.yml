@@ -1,0 +1,98 @@
+name: Upstream Drift
+
+# The starter's anti-decay mechanism (spec #1): diffs the vendored baseline of
+# upstream's app generator (docs/upstream/boilerplate.py) against the live
+# frappe/utils/boilerplate.py and opens — or updates, if one is already open —
+# a needs-triage issue naming the changed template sections and the repo files
+# they map to.
+#
+# Resolution policy: when the baseline matches upstream again, the workflow
+# comments on and closes the open drift issue automatically. Until then the
+# issue stays open and gets a fresh comment on every drift run.
+#
+# Failure mode is deliberately soft: this workflow runs only on the weekly
+# schedule or manual dispatch (never on pull requests, so it can never block
+# the repo's real CI), and the check step is continue-on-error — a broken
+# drift job's worst case is a silently absent weekly issue, and it can never
+# look like "no drift" (which would wrongly close an open issue).
+#
+# Single obvious edit points:
+#   * schedule — the cron line below
+#   * upstream — the UPSTREAM_URL env var on the drift job
+#
+# This workflow is template-only: rename.py deletes it (plus the check script
+# and the baseline) from derived apps, which intentionally diverge from the
+# bench new-app template.
+
+on:
+  schedule:
+    - cron: "17 5 * * 1" # weekly, Mondays 05:17 UTC — THE schedule edit point
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: upstream-drift
+  cancel-in-progress: false
+
+jobs:
+  drift:
+    runs-on: ubuntu-latest
+    name: Check upstream boilerplate.py drift
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # THE upstream-source edit point:
+      UPSTREAM_URL: https://raw.githubusercontent.com/frappe/frappe/develop/frappe/utils/boilerplate.py
+    steps:
+      - name: Clone
+        uses: actions/checkout@v6
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.14"
+
+      - name: Diff baseline against upstream
+        id: check
+        # Soft failure (see header): on error the job stays green but every
+        # issue-management step below is skipped, so a broken check neither
+        # fails CI nor closes a legitimately open drift issue.
+        continue-on-error: true
+        run: python3 check_upstream_drift.py --url "$UPSTREAM_URL"
+
+      - name: Append run link to the report
+        if: steps.check.outcome == 'success' && hashFiles('drift-report.md') != ''
+        run: |
+          printf '\n---\n_Detected by [drift workflow run %s](%s)._\n' \
+            "$GITHUB_RUN_ID" \
+            "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
+            >> drift-report.md
+
+      - name: Open or update the drift issue
+        if: steps.check.outcome == 'success' && hashFiles('drift-report.md') != ''
+        run: |
+          title="Upstream drift: frappe/utils/boilerplate.py"
+          gh label create needs-triage --color fbca04 --description "Needs triage" 2>/dev/null || true
+          existing=$(gh issue list --state open --label needs-triage \
+            --search "$title in:title" --json number --jq '.[0].number // empty')
+          if [ -n "$existing" ]; then
+            gh issue comment "$existing" --body-file drift-report.md
+            echo "Updated existing drift issue #$existing"
+          else
+            gh issue create --title "$title" --label needs-triage --body-file drift-report.md
+          fi
+
+      - name: Close the drift issue once drift is resolved
+        if: steps.check.outcome == 'success' && hashFiles('drift-report.md') == ''
+        run: |
+          title="Upstream drift: frappe/utils/boilerplate.py"
+          existing=$(gh issue list --state open --label needs-triage \
+            --search "$title in:title" --json number --jq '.[0].number // empty')
+          if [ -z "$existing" ]; then
+            echo "No drift and no open drift issue — nothing to do."
+            exit 0
+          fi
+          gh issue comment "$existing" --body "Drift resolved: the baseline now matches upstream ([run $GITHUB_RUN_ID]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID)). Closing per the policy documented in .github/workflows/upstream-drift.yml."
+          gh issue close "$existing"
