@@ -35,6 +35,13 @@ call paths in one call. Don't re-verify its results with grep.
 
 ## Layout
 
+- `rename.py` at the root turns the template into a real app (see README's
+  "Using this template"). It refuses to run twice and deletes
+  `.github/workflows/rename-verification.yml`, the template-only CI workflow
+  that verifies it (copies the repo to a temp dir, renames, asserts zero
+  leftover template references outside `rename.py` + `docs/research/`, runs
+  pre-commit on the renamed tree, and on a v16 leg installs the renamed app
+  into a bench and runs its tests).
 - `frappe_app_boilerplate/` is the Python package; `hooks.py` is the extension
   point (all Frappe hooks; `use_json_request_body`, `export_python_type_annotations`,
   and `require_type_annotated_api_methods` are active, the rest commented stubs).

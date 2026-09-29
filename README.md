@@ -2,6 +2,29 @@
 
 Frappe App Boilerplate
 
+<!-- TEMPLATE-ONLY:BEGIN -->
+
+## Using this template
+
+Click **Use this template** on GitHub, clone your new repo, then run the
+rename script with your app name (snake_case, validated against the same rule
+`bench new-app` enforces):
+
+```bash
+python3 rename.py my_awesome_app --title "My Awesome App" \
+    --publisher "Your Name" --email you@example.com --license mit
+```
+
+Only the app name is required; the other flags default to the current
+metadata. The script rewrites every name-bearing surface — package and module
+directories, `modules.txt`, `pyproject.toml`, hooks strings, workflows,
+pre-commit and markdownlint configs, DocTypes and their tests — and removes
+the template-only verification workflow. It refuses to run a second time, so
+an already-renamed app can't be corrupted by accident. Afterwards, delete the
+example DocType (`*_example/`, marked DELETE ME) and commit.
+
+<!-- TEMPLATE-ONLY:END -->
+
 ## Installation
 
 You can install this app using the [bench](https://github.com/frappe/bench) CLI:

@@ -1,0 +1,166 @@
+name: Rename Verification
+
+# Verifies the template's core mechanic: `rename.py` turns this repo into a
+# real app with zero leftover template references, a clean pre-commit run, and
+# a passing bench install + test suite (Frappe v16 leg).
+#
+# This workflow is template-only: rename.py deletes it from the derived app,
+# where it would have nothing to verify (the script refuses to run twice).
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+concurrency:
+  group: rename-verification-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  rename-check:
+    # Seam-2 verification (no bench): run the script, assert on the resulting
+    # filesystem, lint the renamed tree.
+    runs-on: ubuntu-latest
+    name: Rename script + pre-commit
+
+    steps:
+      - name: Clone
+        uses: actions/checkout@v6
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.14'
+
+      - name: Assert rename.py stays compatible with older Pythons
+        # The script must run on bare machines whose platform Python predates
+        # 3.14 (CI runs 3.14, so grammar regressions like PEP 758 except-without-
+        # parens would otherwise slip through).
+        run: |
+          python3 -c "import ast; ast.parse(open('rename.py').read(), feature_version=(3, 9))"
+
+      - name: Reject invalid app names
+        # On the pristine tree, before any rename.
+        run: |
+          ! python3 rename.py 9starts_with_digit
+          ! python3 rename.py has.dot
+          ! python3 rename.py 'Has Spaces'
+          ! python3 rename.py has-dash
+
+      - name: Copy repo to temp dir and rename
+        run: |
+          cp -r "$GITHUB_WORKSPACE" /tmp/rename-check
+          cd /tmp/rename-check
+          python3 rename.py renamed_app \
+            --title 'Renamed Demo App' \
+            --publisher 'CI Renamer' \
+            --email ci@example.com \
+            --license mit
+
+      - name: Assert no boilerplate references remain
+        working-directory: /tmp/rename-check
+        run: |
+          # Documented exclusions: rename.py itself and docs/research/
+          # (historical notes on upstream's boilerplate generator).
+          if git grep -rIi boilerplate -- . ':(exclude)rename.py' ':(exclude)docs/research/**'; then
+            echo "::error::'boilerplate' references remain after rename"
+            exit 1
+          fi
+
+      - name: Assert renamed Python compiles
+        working-directory: /tmp/rename-check
+        run: python3 -m compileall -q renamed_app
+
+      - name: Assert running the script a second time fails
+        working-directory: /tmp/rename-check
+        run: |
+          if python3 rename.py some_other_app 2>second-run.log; then
+            echo "::error::rename.py ran a second time without refusing"
+            exit 1
+          fi
+          grep -qi 'already been renamed' second-run.log
+
+      - name: Run pre-commit on the renamed tree
+        working-directory: /tmp/rename-check
+        run: |
+          git add -A
+          pip install pre-commit
+          pre-commit run --all-files
+
+  renamed-app-tests:
+    # v16 bench leg: install the renamed app and run its test suite.
+    runs-on: ubuntu-latest
+    name: Renamed app install + tests (Frappe version-16)
+
+    services:
+      redis-cache:
+        image: redis:alpine
+        ports:
+          - 13000:6379
+      redis-queue:
+        image: redis:alpine
+        ports:
+          - 11000:6379
+      mariadb:
+        image: mariadb:11.8
+        env:
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+        options: --health-cmd="mariadb-admin ping" --health-interval=5s --health-timeout=2s --health-retries=3
+
+    steps:
+      - name: Clone
+        uses: actions/checkout@v6
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.14'
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          check-latest: true
+
+      - name: Install MariaDB Client
+        run: |
+          sudo apt update
+          sudo apt-get install mariadb-client
+
+      - name: Copy repo to temp dir, rename, and commit the result
+        # bench get-app clones the path, so the renamed tree must be committed
+        # (a clone would not see uncommitted edits).
+        run: |
+          cp -r "$GITHUB_WORKSPACE" /tmp/rename-check
+          cd /tmp/rename-check
+          python3 rename.py renamed_app --title 'Renamed Demo App'
+          git checkout -B main
+          git add -A
+          git -c user.name='CI Renamer' -c user.email=ci@example.com commit -q -m 'chore: rename template'
+
+      - name: Setup
+        run: |
+          pip install frappe-bench
+          bench init --frappe-branch version-16 --skip-redis-config-generation --skip-assets --python "$(which python)" ~/frappe-bench
+
+      - name: Install renamed app
+        working-directory: /home/runner/frappe-bench
+        run: |
+          bench get-app renamed_app /tmp/rename-check
+          bench setup requirements --dev
+          bench new-site --db-root-password root --admin-password admin test_site
+          bench --site test_site install-app renamed_app
+          bench build
+        env:
+          CI: 'Yes'
+
+      - name: Run renamed app tests
+        working-directory: /home/runner/frappe-bench
+        run: |
+          bench --site test_site set-config allow_tests true
+          bench --site test_site run-tests --app renamed_app
+        env:
+          TYPE: server
