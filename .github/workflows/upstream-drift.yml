@@ -45,6 +45,7 @@ jobs:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       # THE upstream-source edit point:
       UPSTREAM_URL: https://raw.githubusercontent.com/frappe/frappe/develop/frappe/utils/boilerplate.py
+      DRIFT_ISSUE_TITLE: "Upstream drift: frappe/utils/boilerplate.py"
     steps:
       - name: Clone
         uses: actions/checkout@v6
@@ -73,23 +74,25 @@ jobs:
       - name: Open or update the drift issue
         if: steps.check.outcome == 'success' && hashFiles('drift-report.md') != ''
         run: |
-          title="Upstream drift: frappe/utils/boilerplate.py"
           gh label create needs-triage --color fbca04 --description "Needs triage" 2>/dev/null || true
+          # Exact-title match: an unrelated needs-triage issue whose title merely
+          # contains the search string must not absorb drift comments.
           existing=$(gh issue list --state open --label needs-triage \
-            --search "$title in:title" --json number --jq '.[0].number // empty')
+            --search "$DRIFT_ISSUE_TITLE in:title" --json number,title \
+            --jq "map(select(.title == \"$DRIFT_ISSUE_TITLE\")) | .[0].number // empty")
           if [ -n "$existing" ]; then
             gh issue comment "$existing" --body-file drift-report.md
             echo "Updated existing drift issue #$existing"
           else
-            gh issue create --title "$title" --label needs-triage --body-file drift-report.md
+            gh issue create --title "$DRIFT_ISSUE_TITLE" --label needs-triage --body-file drift-report.md
           fi
 
       - name: Close the drift issue once drift is resolved
         if: steps.check.outcome == 'success' && hashFiles('drift-report.md') == ''
         run: |
-          title="Upstream drift: frappe/utils/boilerplate.py"
           existing=$(gh issue list --state open --label needs-triage \
-            --search "$title in:title" --json number --jq '.[0].number // empty')
+            --search "$DRIFT_ISSUE_TITLE in:title" --json number,title \
+            --jq "map(select(.title == \"$DRIFT_ISSUE_TITLE\")) | .[0].number // empty")
           if [ -z "$existing" ]; then
             echo "No drift and no open drift issue — nothing to do."
             exit 0

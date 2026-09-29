@@ -24,17 +24,19 @@ import urllib.request
 from pathlib import Path
 from typing import NoReturn
 
-# The single edit point for the upstream source (also overridable via --url).
+# Fallback upstream source for local runs (the scheduled workflow's
+# UPSTREAM_URL env var is the single edit point; this default and the history
+# link derived from it follow along when the workflow passes --url).
 UPSTREAM_URL = "https://raw.githubusercontent.com/frappe/frappe/develop/frappe/utils/boilerplate.py"
-UPSTREAM_HISTORY_URL = "https://github.com/frappe/frappe/commits/develop/frappe/utils/boilerplate.py"
 
 BASELINE_FILE = "docs/upstream/boilerplate.py"
 DEFAULT_REPORT_FILE = "drift-report.md"
 
 # Which repo surface each upstream top-level section feeds. Template sections
 # drive a generated file; generator functions drive rename.py (this repo's
-# re-implementation of the input/layout decisions). Unlisted sections are
-# reported without a mapping so a human reviews them manually.
+# re-implementation of the input/layout decisions). Entries are repo paths,
+# except entries starting with "(" which are prose annotations. Unlisted
+# sections are reported without a mapping so a human reviews them manually.
 SECTION_FILE_MAP = {
 	"init_template": ["frappe_app_boilerplate/__init__.py"],
 	"pyproject_template": ["pyproject.toml"],
@@ -46,18 +48,18 @@ SECTION_FILE_MAP = {
 	"linter_workflow_template": [".github/workflows/linter.yml"],
 	"readme_template": ["README.md"],
 	"readme_ci_section": ["README.md"],
-	"PATCH_TEMPLATE": ["frappe_app_boilerplate/patches/ (bench new-patch scaffolding)"],
-	"PatchCreator": ["frappe_app_boilerplate/patches/ (bench new-patch scaffolding)"],
-	"APP_TITLE_PATTERN": ["rename.py (title validation)"],
-	"is_valid_title": ["rename.py (title validation)"],
-	"is_valid_email": ["rename.py (email validation)"],
-	"get_license_options": ["license.txt", "rename.py (license choices)"],
-	"get_license_text": ["license.txt", "rename.py (license fetch)"],
-	"make_boilerplate": ["rename.py (generator entry point)"],
-	"_get_user_inputs": ["rename.py (prompted metadata)"],
-	"_create_app_boilerplate": ["repo layout + rename.py (file set written by bench new-app)"],
-	"_create_github_workflow_files": [".github/workflows/ (which workflows bench new-app ships)"],
-	"copy_from_frappe": ["files copied out of the frappe repo — review manually"],
+	"PATCH_TEMPLATE": ["frappe_app_boilerplate/patches/", "(bench new-patch scaffolding)"],
+	"PatchCreator": ["frappe_app_boilerplate/patches/", "(bench new-patch scaffolding)"],
+	"APP_TITLE_PATTERN": ["rename.py"],
+	"is_valid_title": ["rename.py"],
+	"is_valid_email": ["rename.py"],
+	"get_license_options": ["license.txt", "rename.py"],
+	"get_license_text": ["license.txt", "rename.py"],
+	"make_boilerplate": ["rename.py"],
+	"_get_user_inputs": ["rename.py"],
+	"_create_app_boilerplate": ["rename.py", "(the file set bench new-app writes — the repo layout itself)"],
+	"_create_github_workflow_files": [".github/workflows/"],
+	"copy_from_frappe": ["(copies files out of the frappe repo — review manually)"],
 }
 
 
@@ -86,7 +88,9 @@ def top_level_sections(source: str, origin: str) -> dict[str, str]:
 		name = None
 		if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
 			name = node.name
-		elif isinstance(node, ast.Assign) and len(node.targets) == 1 and isinstance(node.targets[0], ast.Name):
+		elif (
+			isinstance(node, ast.Assign) and len(node.targets) == 1 and isinstance(node.targets[0], ast.Name)
+		):
 			name = node.targets[0].id
 		elif isinstance(node, ast.AnnAssign) and isinstance(node.target, ast.Name):
 			name = node.target.id
@@ -98,11 +102,30 @@ def top_level_sections(source: str, origin: str) -> dict[str, str]:
 	return sections
 
 
+def history_url_for(raw_url: str) -> str:
+	"""Derive the github.com commit-history link from a raw.githubusercontent URL."""
+	prefix = "https://raw.githubusercontent.com/"
+	if raw_url.startswith(prefix):
+		parts = raw_url[len(prefix) :].split("/", 3)
+		if len(parts) == 4:
+			owner, repo, branch, path = parts
+			return f"https://github.com/{owner}/{repo}/commits/{branch}/{path}"
+	return raw_url
+
+
 def mapped_files(section: str) -> str:
-	files = SECTION_FILE_MAP.get(section)
-	if not files:
+	entries = SECTION_FILE_MAP.get(section)
+	if not entries:
 		return "_(no mapped file — review manually)_"
-	return ", ".join(f"`{f}`" if not f.startswith(("(", "files")) else f for f in files)
+	rendered = []
+	for entry in entries:
+		if entry.startswith("("):
+			rendered.append(entry)
+		elif Path(entry.rstrip("/")).exists():
+			rendered.append(f"`{entry}`")
+		else:
+			rendered.append(f"`{entry}` _(missing — mapping stale?)_")
+	return ", ".join(rendered)
 
 
 def section_table(title: str, sections: list[str]) -> str:
@@ -133,11 +156,13 @@ def build_report(url: str, baseline: str, upstream: str) -> str:
 		f"The vendored baseline `{BASELINE_FILE}` no longer matches the current upstream app",
 		"generator, so the starter's template-derived files may be stale.",
 		"",
-		f"**Upstream diff:** {UPSTREAM_HISTORY_URL} — compare the newest revision against the baseline.",
+		f"**Upstream diff:** {history_url_for(url)} — compare the newest revision against the baseline.",
 		"",
 	]
 	parts.append(section_table("Changed sections", changed))
-	parts.append(section_table("Added upstream sections (decide whether the starter should adopt them)", added))
+	parts.append(
+		section_table("Added upstream sections (decide whether the starter should adopt them)", added)
+	)
 	parts.append(section_table("Removed upstream sections (drop their counterparts here)", removed))
 	if not (changed or added or removed):
 		parts += [
