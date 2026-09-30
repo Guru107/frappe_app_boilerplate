@@ -72,6 +72,12 @@ call paths in one call. Don't re-verify its results with grep.
 
 - Python ≥ 3.14 (ruff `target-version = "py314"`). Ruff: **tab indentation**,
   double quotes, line-length 110, `E501`/`F401` ignored.
+- Module size is a review convention, not a linter rule (ADR 0004: ruff has
+  no file-length rule and Frappe idioms legitimately produce long declarative
+  files). Split a Python module when it gains a second responsibility;
+  ~400–500 lines of hand-written code is the threshold for asking the
+  question. Exempt by nature: `hooks.py` (declarative registry), DocType
+  `*.json` (generated), test modules, patches.
 - Pre-commit runs ruff (import-sort + lint + format), prettier (js/vue/scss),
   eslint 8, gitleaks (secrets), and markdownlint-cli2 (config in
   `.markdownlint-cli2.jsonc`). CI additionally runs commitlint
