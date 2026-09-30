@@ -46,12 +46,13 @@ jobs:
           python3 -c "import ast; ast.parse(open('rename.py').read(), feature_version=(3, 9))"
 
       - name: Reject invalid app names
-        # On the pristine tree, before any rename.
+        # On the pristine tree, before any rename. Each invocation must fail
+        # (if-form, not `!` — SC2251: a bare `!` skips errexit).
         run: |
-          ! python3 rename.py 9starts_with_digit
-          ! python3 rename.py has.dot
-          ! python3 rename.py 'Has Spaces'
-          ! python3 rename.py has-dash
+          if python3 rename.py 9starts_with_digit; then exit 1; fi
+          if python3 rename.py has.dot; then exit 1; fi
+          if python3 rename.py 'Has Spaces'; then exit 1; fi
+          if python3 rename.py has-dash; then exit 1; fi
 
       - name: Copy repo to temp dir and rename
         run: |

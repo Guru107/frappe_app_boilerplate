@@ -83,6 +83,9 @@ call paths in one call. Don't re-verify its results with grep.
   `.markdownlint-cli2.jsonc`), actionlint + zizmor (GitHub Actions
   correctness/security), codespell, and the generic pre-commit-hooks gates
   (large files, EOF, line endings, shebang-exec consistency, private keys).
+  actionlint runs shellcheck on `run:` blocks only when shellcheck is
+  installed — without it those checks are silently skipped (CI has it;
+  install it locally to match).
   CI additionally runs commitlint
   (config-conventional) on PR commits, basedmypy type checking, and pip-audit.
   Prettier/eslint exclude `public/dist/`,
