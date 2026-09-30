@@ -21,17 +21,24 @@ call paths in one call. Don't re-verify its results with grep.
 | Task | Command |
 | --- | --- |
 | Lint + format everything | `pre-commit run --all-files` |
+| Type check (basedmypy) | `mypy` (config in `pyproject.toml` `[tool.mypy]`) |
 | Tests | `bench --site test_site run-tests --app frappe_app_boilerplate` |
 | One test module | add `--module frappe_app_boilerplate.path.to.module` |
 | One test | add `--test <test_name>` |
 | Security scan (as CI) | `semgrep ci --config <frappe-semgrep-rules>/rules --config r/python.lang.correctness` |
+| Secrets scan | `gitleaks git --redact .` |
 | Dependency audit | `pip-audit --desc on .` |
+| Markdown lint | `npx markdownlint-cli2 "**/*.md"` |
+| Commit lint (PR commits) | `npx commitlint --from <base-sha> --to <head-sha>` |
+| Upstream drift check (template-only) | `python3 check_upstream_drift.py` |
 
 - Tests require a bench with the app installed and
   `bench --site test_site set-config allow_tests true`. Full setup sequence is
   in `.github/workflows/ci.yml` (bench init → get-app → new-site → install-app
   → bench build).
-- README says CI runs on `develop`; the workflow actually triggers on `main` + PRs. Trust the workflow.
+- CI (tests) triggers on pushes to `main` + PRs; Linters (`linter.yml`) on
+  PRs + manual dispatch; Rename Verification on pushes to `main` + PRs;
+  Upstream Drift on a weekly cron + manual dispatch. Workflows are the truth.
 
 ## Layout
 
@@ -41,7 +48,9 @@ call paths in one call. Don't re-verify its results with grep.
   that verifies it (copies the repo to a temp dir, renames, asserts zero
   leftover template references outside `rename.py` + `docs/research/`, runs
   pre-commit on the renamed tree, and on a v16 leg installs the renamed app
-  into a bench and runs its tests).
+  into a bench and runs its tests). It also deletes the upstream
+  drift-tracking tooling (`upstream-drift.yml`, `check_upstream_drift.py`,
+  `docs/upstream/boilerplate.py`) and the template-only README section.
 - `frappe_app_boilerplate/` is the Python package; `hooks.py` is the extension
   point (all Frappe hooks; `use_json_request_body`, `export_python_type_annotations`,
   and `require_type_annotated_api_methods` are active, the rest commented stubs).
@@ -66,7 +75,8 @@ call paths in one call. Don't re-verify its results with grep.
 - Pre-commit runs ruff (import-sort + lint + format), prettier (js/vue/scss),
   eslint 8, gitleaks (secrets), and markdownlint-cli2 (config in
   `.markdownlint-cli2.jsonc`). CI additionally runs commitlint
-  (config-conventional) on PR commits. Prettier/eslint exclude `public/dist/`,
+  (config-conventional) on PR commits, basedmypy type checking, and pip-audit.
+  Prettier/eslint exclude `public/dist/`,
   `templates/includes/`, `public/js/lib/`, and any path containing
   `boilerplate` — files there are intentionally unlinted (may contain jinja or
   vendored bundles).

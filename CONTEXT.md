@@ -31,3 +31,12 @@ static check (formatting, linting, typing, security, secrets, commit
 hygiene, docstrings, stylesheets, markdown) has a configured, CI-enforced
 tool — see `docs/adr/0001-security-scanning-via-semgrep.md` for how
 security scanning specifically is composed.
+
+**Upstream drift**
+Divergence between this repo and what the current upstream app generator
+(`frappe/utils/boilerplate.py` on frappe's `develop` branch) would produce
+for `bench new-app`. The starter's anti-decay mechanism: a weekly workflow
+(`.github/workflows/upstream-drift.yml`) diffs the vendored byte-exact
+baseline (`docs/upstream/boilerplate.py`) against live upstream and opens —
+or updates — a `needs-triage` issue on drift, closing it once resolved.
+Template-only: `rename.py` deletes the whole mechanism from derived apps.
