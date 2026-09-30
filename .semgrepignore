@@ -1,0 +1,8 @@
+# docs/upstream/ holds a byte-exact vendored copy of upstream's app generator
+# (the drift-check baseline) — semgrep must never scan it (it flags upstream's
+# file writes as file-traversal findings we cannot fix without breaking the
+# baseline). Mirrors the exclusion in .pre-commit-config.yaml. Template-only:
+# rename.py deletes this file from derived apps. Written as the directory (not
+# the file path) so this file stays free of template-name substrings — the
+# rename-verification workflow greps for leftovers after a rename.
+docs/upstream/

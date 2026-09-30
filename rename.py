@@ -12,9 +12,10 @@ files, the pre-commit and markdownlint configs, the Settings and example
 DocTypes, README and docs — and renames paths containing the template name.
 Only git-tracked files are touched. The template-only verification workflow
 (.github/workflows/rename-verification.yml), the upstream drift-tracking
-tooling (.github/workflows/upstream-drift.yml, check_upstream_drift.py and the
-vendored baseline docs/upstream/boilerplate.py) and the template-only README
-section are removed, since they serve the template, not the derived app.
+tooling (.github/workflows/upstream-drift.yml, check_upstream_drift.py, the
+vendored baseline docs/upstream/boilerplate.py and its .semgrepignore
+exclusion) and the template-only README section are removed, since they
+serve the template, not the derived app.
 
 The script refuses to run when no "boilerplate" references remain, so an
 already-renamed app cannot be corrupted by running it twice.
@@ -60,13 +61,15 @@ VERIFICATION_WORKFLOW = ".github/workflows/rename-verification.yml"
 
 # Template-only machinery removed from the derived app: the verification
 # workflow and the upstream drift-tracking tooling (workflow, check script,
-# vendored baseline). Derived apps intentionally diverge from the bench
-# new-app template, so drift against it would be pure noise for them.
+# vendored baseline, and the baseline's semgrep exclusion). Derived apps
+# intentionally diverge from the bench new-app template, so drift against it
+# would be pure noise for them.
 TEMPLATE_ONLY_PATHS = (
 	VERIFICATION_WORKFLOW,
 	".github/workflows/upstream-drift.yml",
 	"check_upstream_drift.py",
 	"docs/upstream/boilerplate.py",
+	".semgrepignore",
 )
 
 # Paths that intentionally keep "boilerplate" references after a rename: this

@@ -32,7 +32,10 @@ tool.
 ## Consequences
 
 - One security-scanning tool, one config surface, one suppression syntax
-  (`# nosemgrep`) instead of two.
+  (`# nosemgrep`) instead of two. **Amended 2026-09-30:** path-level
+  exclusion via `.semgrepignore` is also permitted, but only for files that
+  cannot carry an inline suppression — today exactly one: the vendored,
+  byte-exact drift baseline under `docs/upstream/`.
 - **Scope note (amended 2026-09-17):** this ADR covers *Python code* security
   scanning only. **Secrets scanning** (API keys, tokens committed to the
   repo) is a separate category of check with its own dedicated tool; adding
