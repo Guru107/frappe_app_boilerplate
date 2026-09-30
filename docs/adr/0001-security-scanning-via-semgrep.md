@@ -29,6 +29,17 @@ additional `--config` on the existing `semgrep ci` invocation in
 `linter.yml`, rather than installing and running `bandit` as a separate
 tool.
 
+**Amended 2026-09-30:** `p/bandit` was added to `linter.yml` (the workflow
+had lagged this decision, running only the frappe rules +
+`r/python.lang.correctness`). `p/security-audit` and `r/python.lang.security`
+were evaluated against this repo at that point and **rejected**: zero
+incremental findings beyond `p/bandit` (only duplicates of bandit's urlopen
+audit heuristic), and security-audit is the registry's noisy audit tier. The
+`p/bandit` rollout required three `# nosemgrep` suppressions on template
+tooling (`import subprocess` and workflow-controlled `urlopen` calls in
+`rename.py` / `check_upstream_drift.py`) — audit heuristics, not real
+findings.
+
 ## Consequences
 
 - One security-scanning tool, one config surface, one suppression syntax

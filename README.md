@@ -116,8 +116,8 @@ The following GitHub Actions workflows are configured:
   3.14 / Node 24 on both legs), plus a `bench get-app --soft-link` install
   smoke leg on v16.
 - **Linters** (`.github/workflows/linter.yml`, PRs): Frappe semgrep rules +
-  `r/python.lang.correctness`, basedmypy type checking, pip-audit, gitleaks,
-  markdownlint, and commitlint.
+  `r/python.lang.correctness` + `p/bandit`, basedmypy type checking,
+  pip-audit, gitleaks, markdownlint, and commitlint.
 
 ## License
 

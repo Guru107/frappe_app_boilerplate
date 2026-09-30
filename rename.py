@@ -34,7 +34,7 @@ import contextlib
 import json
 import os
 import re
-import subprocess
+import subprocess  # nosemgrep: gitlab.bandit.B404 -- CLI script; git subprocesses are its job (audit heuristic)
 import sys
 import urllib.request
 from email.headerregistry import Address
@@ -300,7 +300,9 @@ def update_license_file(root: Path, license_id: str) -> None:
 	url = f"https://api.github.com/licenses/{license_id.lower()}"
 	body = None
 	try:
-		with urllib.request.urlopen(url, timeout=15) as response:
+		# nosemgrep below: pinned https GitHub API host; the license-id path is validated
+		# CLI input, and the fetch is best-effort (bandit audit heuristic).
+		with urllib.request.urlopen(url, timeout=15) as response:  # nosemgrep
 			body = json.loads(response.read().decode("utf-8"))["body"]
 	except OSError:
 		pass

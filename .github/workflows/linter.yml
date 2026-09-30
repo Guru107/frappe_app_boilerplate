@@ -89,9 +89,12 @@ jobs:
         run: git clone --depth 1 https://github.com/frappe/semgrep-rules.git frappe-semgrep-rules
 
       - name: Run Semgrep rules
+        # frappe rules (framework misuse) + python correctness + p/bandit
+        # (stdlib security port, per ADR 0001 — p/security-audit was evaluated
+        # and rejected: zero incremental findings, noisy tier).
         run: |
           pip install semgrep
-          semgrep ci --config ./frappe-semgrep-rules/rules --config r/python.lang.correctness
+          semgrep ci --config ./frappe-semgrep-rules/rules --config r/python.lang.correctness --config p/bandit
 
   typecheck:
     # basedmypy per ADR 0003: scoped to the app's own modules via the files=

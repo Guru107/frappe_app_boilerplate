@@ -71,7 +71,9 @@ def fail(message: str) -> NoReturn:
 def fetch_upstream(url: str) -> str:
 	request = urllib.request.Request(url, headers={"User-Agent": "frappe-app-boilerplate-drift-check"})
 	try:
-		with urllib.request.urlopen(request, timeout=30) as response:
+		# nosemgrep below: the URL is workflow-controlled (default pinned https upstream;
+		# --url override exists for testing), not end-user input (bandit audit heuristic).
+		with urllib.request.urlopen(request, timeout=30) as response:  # nosemgrep
 			return response.read().decode("utf-8")
 	except OSError as exc:
 		fail(f"could not fetch {url}: {exc}")

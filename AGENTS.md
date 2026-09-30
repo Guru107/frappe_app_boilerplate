@@ -25,7 +25,7 @@ call paths in one call. Don't re-verify its results with grep.
 | Tests | `bench --site test_site run-tests --app frappe_app_boilerplate` |
 | One test module | add `--module frappe_app_boilerplate.path.to.module` |
 | One test | add `--test <test_name>` |
-| Security scan (as CI) | `semgrep ci --config <frappe-semgrep-rules>/rules --config r/python.lang.correctness` |
+| Security scan (as CI) | `semgrep ci --config <frappe-semgrep-rules>/rules --config r/python.lang.correctness --config p/bandit` |
 | Secrets scan | `gitleaks git --redact .` |
 | Dependency audit | `pip-audit --desc on .` |
 | Markdown lint | `npx markdownlint-cli2 "**/*.md"` |
@@ -81,10 +81,10 @@ call paths in one call. Don't re-verify its results with grep.
   `boilerplate` — files there are intentionally unlinted (may contain jinja or
   vendored bundles).
 - No Bandit: ADR 0001 deliberately consolidated Python security scanning into
-  semgrep. Suppress findings with `# nosemgrep`, not `# nosec`. Don't add a
-  second security scanner without revisiting the ADR. Note: the ADR mentions
-  `p/bandit`/`p/security-audit` configs, but `linter.yml` only runs the frappe
-  rules + `r/python.lang.correctness` today — the workflow is the truth.
+  semgrep (`linter.yml` runs the frappe rules + `r/python.lang.correctness` +
+  `p/bandit`; `p/security-audit` was evaluated and rejected — see the ADR's
+  2026-09-30 amendment). Suppress findings with `# nosemgrep`, not `# nosec`.
+  Don't add a second security scanner without revisiting the ADR.
 
 ## Agent skills
 
