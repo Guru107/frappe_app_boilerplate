@@ -28,6 +28,9 @@ packages = []
 [tool.ruff]
 line-length = 110
 target-version = "py314"
+# Byte-exact vendored drift baseline — never linted (mirrors the pre-commit
+# and .semgrepignore exclusions so bare `ruff check` is clean too).
+extend-exclude = ["docs/upstream"]
 
 [tool.ruff.lint]
 select = [
@@ -46,8 +49,32 @@ select = [
     "PLE",
     "PLW",
     "ANN",
+    # Second expansion (2026-09-30, verified zero-finding on this repo):
+    # comprehensions, exception messages, error handling, return flow,
+    # performance, modern idioms, logging, __future__ annotations, naming,
+    # import tidy, string concat, pathlib, executables, print detection.
+    "C4",
+    "EM",
+    "TRY",
+    "RET",
+    "PERF",
+    "FURB",
+    "LOG",
+    "G",
+    "FA",
+    "N",
+    "TID",
+    "ISC",
+    "PTH",
+    "EXE",
+    "T20",
     # S rules are deliberately never selected: semgrep owns security scanning
-    # per ADR 0001.
+    # per ADR 0001. Also deliberately not selected: DTZ (frappe uses naive
+    # datetimes by convention), SLF (tests poke privates), FIX/TD (fires on
+    # the template's own DELETE-ME markers), D (undocumented hooks are a
+    # Frappe idiom), PLC (function-level imports avoid circular imports),
+    # ERA (hooks.py is commented stubs by design), A (DocType kwargs shadow
+    # builtins by convention).
 ]
 ignore = [
     "B017", # assertRaises(Exception) - should be more specific
@@ -71,6 +98,11 @@ ignore = [
 ]
 typing-modules = ["frappe.types.DF"]
 
+[tool.ruff.lint.per-file-ignores]
+# CLI tooling: print() is its output.
+"rename.py" = ["T20"]
+"check_upstream_drift.py" = ["T20"]
+
 [tool.ruff.format]
 quote-style = "double"
 indent-style = "tab"
@@ -93,6 +125,13 @@ disallow_any_unimported = false
 disallow_subclassing_any = false
 disallow_any_decorated = false
 disallow_untyped_decorators = false
+# Strictness beyond frappe core's own config (verified zero-finding on this
+# repo): every function must be fully annotated, and Any leaks / useless
+# machinery are warned on. Propagates a typed-code habit to derived apps.
+disallow_untyped_defs = true
+warn_return_any = true
+warn_unused_ignores = true
+warn_redundant_casts = true
 files = [
     "frappe_app_boilerplate/api.py",
     "frappe_app_boilerplate/hooks.py",

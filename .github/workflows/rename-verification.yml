@@ -13,6 +13,9 @@ on:
       - main
   pull_request:
 
+permissions:
+  contents: read
+
 concurrency:
   group: rename-verification-${{ github.ref }}
   cancel-in-progress: true
@@ -27,6 +30,8 @@ jobs:
     steps:
       - name: Clone
         uses: actions/checkout@v6
+        with:
+          persist-credentials: false
 
       - name: Setup Python
         uses: actions/setup-python@v6
@@ -113,6 +118,8 @@ jobs:
     steps:
       - name: Clone
         uses: actions/checkout@v6
+        with:
+          persist-credentials: false
 
       - name: Setup Python
         uses: actions/setup-python@v6

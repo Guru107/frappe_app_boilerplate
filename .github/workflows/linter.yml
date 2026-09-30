@@ -22,6 +22,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
+          persist-credentials: false
           fetch-depth: 200
       - uses: actions/setup-node@v6
         with:
@@ -44,6 +45,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
+          persist-credentials: false
           fetch-depth: 0
 
       - name: Install gitleaks
@@ -64,6 +66,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
       - uses: actions/setup-node@v6
         with:
           node-version: 24
@@ -79,22 +83,26 @@ jobs:
 
     steps:
       - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
       - uses: actions/setup-python@v6
         with:
           python-version: '3.14'
           cache: pip
-      - uses: pre-commit/action@v3.0.0
+      # Hash-pinned (zizmor unpinned-uses); v3.0.0.
+      - uses: pre-commit/action@646c83fcd040023954eafda54b4db0192ce70507
 
       - name: Download Semgrep rules
         run: git clone --depth 1 https://github.com/frappe/semgrep-rules.git frappe-semgrep-rules
 
       - name: Run Semgrep rules
-        # frappe rules (framework misuse) + python correctness + p/bandit
-        # (stdlib security port, per ADR 0001 — p/security-audit was evaluated
-        # and rejected: zero incremental findings, noisy tier).
+        # frappe rules (framework misuse) + python correctness + python
+        # best-practice + p/bandit (stdlib security port, per ADR 0001 —
+        # p/security-audit was evaluated and rejected: zero incremental
+        # findings, noisy tier).
         run: |
           pip install semgrep
-          semgrep ci --config ./frappe-semgrep-rules/rules --config r/python.lang.correctness --config p/bandit
+          semgrep ci --config ./frappe-semgrep-rules/rules --config r/python.lang.correctness --config r/python.lang.best-practice --config p/bandit
 
   typecheck:
     # basedmypy per ADR 0003: scoped to the app's own modules via the files=
@@ -105,6 +113,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
       - uses: actions/setup-python@v6
         with:
           python-version: '3.14'
@@ -127,6 +137,8 @@ jobs:
           python-version: '3.14'
 
       - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
 
       - name: Cache pip
         uses: actions/cache@v5

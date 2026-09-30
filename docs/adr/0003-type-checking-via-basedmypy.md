@@ -42,3 +42,13 @@ API method (which doubles as living documentation of
   for consumers even though it shapes the starter's identity.
 - Complements, does not replace, the ruff expansion (SIM/C90/selected-PL/ANN)
   decided alongside it; security rules (S) remain with semgrep per ADR 0001.
+- **Amended 2026-09-30:** the config proved stricter than frappe core's in
+  practice — `disallow_untyped_defs`, `warn_return_any`,
+  `warn_unused_ignores`, and `warn_redundant_casts` were enabled after
+  verifying they produce zero findings on the shipped code. The Any-related
+  relaxations above stay off-limits (they fight framework dynamism); these
+  four only demand complete annotations and honest `Any` hygiene, which a
+  new app can sustain from day one. The ruff selection was expanded at the
+  same time (C4/EM/TRY/RET/PERF/FURB/LOG/G/FA/N/TID/ISC/PTH/EXE/T20 — all
+  verified zero-finding; DTZ/SLF/FIX/D/PLC/ERA/A evaluated and rejected for
+  fighting Frappe idioms, recorded inline in `pyproject.toml`).

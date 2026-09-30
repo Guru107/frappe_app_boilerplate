@@ -104,8 +104,9 @@ pre-commit install
 ```
 
 Pre-commit runs ruff (import sort, lint, format), prettier, eslint, gitleaks
-(secrets scanning), and markdownlint-cli2. Commit messages must follow
-Conventional Commits (commitlint is enforced on pull requests).
+(secrets scanning), markdownlint-cli2, actionlint and zizmor (GitHub Actions
+checks), codespell, and the generic file-hygiene hooks. Commit messages must
+follow Conventional Commits (commitlint is enforced on pull requests).
 
 ## CI
 
@@ -116,8 +117,8 @@ The following GitHub Actions workflows are configured:
   3.14 / Node 24 on both legs), plus a `bench get-app --soft-link` install
   smoke leg on v16.
 - **Linters** (`.github/workflows/linter.yml`, PRs): Frappe semgrep rules +
-  `r/python.lang.correctness` + `p/bandit`, basedmypy type checking,
-  pip-audit, gitleaks, markdownlint, and commitlint.
+  `r/python.lang.correctness` + `r/python.lang.best-practice` + `p/bandit`,
+  basedmypy type checking, pip-audit, gitleaks, markdownlint, and commitlint.
 
 ## License
 

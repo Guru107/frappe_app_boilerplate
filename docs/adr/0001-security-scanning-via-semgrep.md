@@ -38,7 +38,11 @@ audit heuristic), and security-audit is the registry's noisy audit tier. The
 `p/bandit` rollout required three `# nosemgrep` suppressions on template
 tooling (`import subprocess` and workflow-controlled `urlopen` calls in
 `rename.py` / `check_upstream_drift.py`) — audit heuristics, not real
-findings.
+findings. `r/python.lang.best-practice` (a correctness tier, not security)
+was added to the same invocation the same day, verified zero-finding. Also
+note: zizmor, added to pre-commit at that time, scans GitHub Actions
+workflow security — a third category outside this ADR's Python-code scope,
+like secrets scanning.
 
 ## Consequences
 

@@ -1,6 +1,9 @@
 # docs/upstream/ holds a byte-exact vendored copy of upstream's app generator
 # (the drift-check baseline) — linters/formatters must never touch it.
-exclude: 'node_modules|.git|^docs/upstream/'
+# Note: the .git alternative must be anchored (^\.git/) — an unanchored .git
+# would also match .github/, silently excluding workflow files from hooks
+# that target them (actionlint, zizmor).
+exclude: 'node_modules|^\.git/|^docs/upstream/'
 default_stages: [pre-commit]
 fail_fast: false
 
@@ -18,6 +21,15 @@ repos:
       - id: check-toml
       - id: check-yaml
       - id: debug-statements
+      # Second tier (2026-09-30 strictness pass): cheap conventional gates.
+      - id: check-added-large-files
+      - id: check-case-conflict
+      - id: check-docstring-first
+      - id: check-executables-have-shebangs
+      - id: check-shebang-scripts-are-executable
+      - id: detect-private-key
+      - id: end-of-file-fixer
+      - id: mixed-line-ending
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.14.10
@@ -74,6 +86,24 @@ repos:
     rev: v0.18.1
     hooks:
       - id: markdownlint-cli2
+
+  # GitHub Actions hygiene: actionlint (correctness) + zizmor (workflow
+  # security). Both also run in CI via the linter leg's pre-commit action.
+  - repo: https://github.com/rhysd/actionlint
+    rev: v1.7.9
+    hooks:
+      - id: actionlint
+
+  - repo: https://github.com/zizmorcore/zizmor-pre-commit
+    rev: v1.9.0
+    hooks:
+      - id: zizmor
+
+  # Typos in a docs-heavy repo (CONTEXT, ADRs, agent docs).
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.4.3
+    hooks:
+      - id: codespell
 
 ci:
     autoupdate_schedule: weekly

@@ -289,11 +289,11 @@ def rename_paths(
 
 def remove_empty_dirs(root: Path) -> None:
 	for dirpath, dirnames, filenames in os.walk(root, topdown=False):
-		if ".git" in dirpath.split(os.sep):
+		if ".git" in Path(dirpath).parts:
 			continue
 		if not dirnames and not filenames:
 			with contextlib.suppress(OSError):
-				os.rmdir(dirpath)
+				Path(dirpath).rmdir()
 
 
 def update_license_file(root: Path, license_id: str) -> None:

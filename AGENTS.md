@@ -25,7 +25,7 @@ call paths in one call. Don't re-verify its results with grep.
 | Tests | `bench --site test_site run-tests --app frappe_app_boilerplate` |
 | One test module | add `--module frappe_app_boilerplate.path.to.module` |
 | One test | add `--test <test_name>` |
-| Security scan (as CI) | `semgrep ci --config <frappe-semgrep-rules>/rules --config r/python.lang.correctness --config p/bandit` |
+| Security scan (as CI) | `semgrep ci --config <frappe-semgrep-rules>/rules --config r/python.lang.correctness --config r/python.lang.best-practice --config p/bandit` |
 | Secrets scan | `gitleaks git --redact .` |
 | Dependency audit | `pip-audit --desc on .` |
 | Markdown lint | `npx markdownlint-cli2 "**/*.md"` |
@@ -79,8 +79,11 @@ call paths in one call. Don't re-verify its results with grep.
   question. Exempt by nature: `hooks.py` (declarative registry), DocType
   `*.json` (generated), test modules, patches.
 - Pre-commit runs ruff (import-sort + lint + format), prettier (js/vue/scss),
-  eslint 8, gitleaks (secrets), and markdownlint-cli2 (config in
-  `.markdownlint-cli2.jsonc`). CI additionally runs commitlint
+  eslint 8, gitleaks (secrets), markdownlint-cli2 (config in
+  `.markdownlint-cli2.jsonc`), actionlint + zizmor (GitHub Actions
+  correctness/security), codespell, and the generic pre-commit-hooks gates
+  (large files, EOF, line endings, shebang-exec consistency, private keys).
+  CI additionally runs commitlint
   (config-conventional) on PR commits, basedmypy type checking, and pip-audit.
   Prettier/eslint exclude `public/dist/`,
   `templates/includes/`, `public/js/lib/`, and any path containing
@@ -88,9 +91,10 @@ call paths in one call. Don't re-verify its results with grep.
   vendored bundles).
 - No Bandit: ADR 0001 deliberately consolidated Python security scanning into
   semgrep (`linter.yml` runs the frappe rules + `r/python.lang.correctness` +
-  `p/bandit`; `p/security-audit` was evaluated and rejected — see the ADR's
-  2026-09-30 amendment). Suppress findings with `# nosemgrep`, not `# nosec`.
-  Don't add a second security scanner without revisiting the ADR.
+  `r/python.lang.best-practice` + `p/bandit`; `p/security-audit` was
+  evaluated and rejected — see the ADR's 2026-09-30 amendment). Suppress
+  findings with `# nosemgrep`, not `# nosec`. Don't add a second security
+  scanner without revisiting the ADR.
 
 ## Agent skills
 

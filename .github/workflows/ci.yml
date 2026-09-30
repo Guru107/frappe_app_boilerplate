@@ -6,6 +6,9 @@ on:
       - main
   pull_request:
 
+permissions:
+  contents: read
+
 concurrency:
   group: main-frappe_app_boilerplate-${{ github.event.number }}
   cancel-in-progress: true
@@ -44,6 +47,8 @@ jobs:
     steps:
       - name: Clone
         uses: actions/checkout@v6
+        with:
+          persist-credentials: false
 
       - name: Find tests
         run: |
@@ -139,6 +144,8 @@ jobs:
     steps:
       - name: Clone
         uses: actions/checkout@v6
+        with:
+          persist-credentials: false
 
       - name: Setup Python
         uses: actions/setup-python@v6

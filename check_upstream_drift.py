@@ -134,8 +134,7 @@ def section_table(title: str, sections: list[str]) -> str:
 	if not sections:
 		return ""
 	lines = [f"### {title}", "", "| Section | Repo file(s) to re-sync |", "| --- | --- |"]
-	for section in sections:
-		lines.append(f"| `{section}` | {mapped_files(section)} |")
+	lines.extend(f"| `{section}` | {mapped_files(section)} |" for section in sections)
 	lines.append("")
 	return "\n".join(lines)
 
