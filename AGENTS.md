@@ -85,7 +85,10 @@ call paths in one call. Don't re-verify its results with grep.
   (large files, EOF, line endings, shebang-exec consistency, private keys).
   actionlint runs shellcheck on `run:` blocks only when shellcheck is
   installed — without it those checks are silently skipped (CI has it;
-  install it locally to match).
+  install it locally to match). Pre-commit also runs pydoclint (docstring
+  correctness, not coverage — ADR 0005) and djLint (jinja lint, dormant
+  until templates exist). PRs get advisory size labels (`pr-size.yml`,
+  never blocking; the size convention is in README's Contributing).
   CI additionally runs commitlint
   (config-conventional) on PR commits, basedmypy type checking, and pip-audit.
   Prettier/eslint exclude `public/dist/`,

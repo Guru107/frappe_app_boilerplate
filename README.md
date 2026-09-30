@@ -105,8 +105,14 @@ pre-commit install
 
 Pre-commit runs ruff (import sort, lint, format), prettier, eslint, gitleaks
 (secrets scanning), markdownlint-cli2, actionlint and zizmor (GitHub Actions
-checks), codespell, and the generic file-hygiene hooks. Commit messages must
-follow Conventional Commits (commitlint is enforced on pull requests).
+checks), codespell, pydoclint (docstring correctness), djLint (jinja lint),
+and the generic file-hygiene hooks. Commit messages must follow
+Conventional Commits (commitlint is enforced on pull requests).
+
+Keep pull requests small: one self-contained change per PR. ~100 lines is a
+reasonable size, ~500 lines (including tests) is the soft ceiling, ~1000 is
+too large — size judgment stays with reviewers (an advisory labeler
+workflow annotates PRs; it never blocks).
 
 ## CI
 
@@ -119,6 +125,8 @@ The following GitHub Actions workflows are configured:
 - **Linters** (`.github/workflows/linter.yml`, PRs): Frappe semgrep rules +
   `r/python.lang.correctness` + `r/python.lang.best-practice` + `p/bandit`,
   basedmypy type checking, pip-audit, gitleaks, markdownlint, and commitlint.
+- **PR Size** (`.github/workflows/pr-size.yml`, PRs): advisory size labels
+  only — never blocks.
 
 ## License
 

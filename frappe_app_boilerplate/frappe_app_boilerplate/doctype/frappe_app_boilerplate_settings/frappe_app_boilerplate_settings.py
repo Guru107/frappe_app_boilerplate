@@ -16,5 +16,3 @@ class FrappeAppBoilerplateSettings(Document):
 
 		default_greeting: DF.Data | None
 	# end: auto-generated types
-
-	pass

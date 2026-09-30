@@ -68,13 +68,30 @@ select = [
     "PTH",
     "EXE",
     "T20",
+    # Third expansion (2026-09-30, docs/research/2026-09-30-review-simplicity-tooling.md):
+    # PIE: dead-syntax removal (no-op pass/spread/range-start, duplicate class
+    # fields) — stable, auto-fixable, zero-noise. PGH: suppression hygiene —
+    # no bare `noqa`/`type: ignore`, so every suppression is self-explanatory
+    # in review (complements RUF100, which prunes stale noqa). INP: a missing
+    # __init__.py silently breaks Frappe module/patch loading. YTT:
+    # sys.version misuse guards, cheap.
+    "PIE",
+    "PGH",
+    "INP",
+    "YTT",
     # S rules are deliberately never selected: semgrep owns security scanning
     # per ADR 0001. Also deliberately not selected: DTZ (frappe uses naive
     # datetimes by convention), SLF (tests poke privates), FIX/TD (fires on
-    # the template's own DELETE-ME markers), D (undocumented hooks are a
-    # Frappe idiom), PLC (function-level imports avoid circular imports),
-    # ERA (hooks.py is commented stubs by design), A (DocType kwargs shadow
-    # builtins by convention).
+    # the template's own DELETE-ME markers), D (docstring *coverage* fights
+    # the undocumented-hook idiom — correctness is pydoclint's job, see
+    # [tool.pydoclint]; DOC is preview-only in ruff until it stabilizes), PLC
+    # (function-level imports avoid circular imports), ERA (hooks.py is
+    # commented stubs by design), A (DocType kwargs shadow builtins by
+    # convention), SLOT (framework-managed classes), ARG (Frappe hook
+    # signatures carry unused args by design), TC (fights
+    # export_python_type_annotations — annotations are read at runtime), FLY
+    # (overlaps UP032, ignored for translations), COM/Q (formatter-owned),
+    # BLE (broad-except + frappe.log_error is a sanctioned idiom).
 ]
 ignore = [
     "B017", # assertRaises(Exception) - should be more specific
@@ -102,6 +119,20 @@ typing-modules = ["frappe.types.DF"]
 # CLI tooling: print() is its output.
 "rename.py" = ["T20"]
 "check_upstream_drift.py" = ["T20"]
+
+[tool.pydoclint]
+# Docstring correctness without coverage (ADR 0005): undocumented functions
+# are never checked, and short description-only docstrings are skipped — this
+# is what makes the check compatible with the undocumented-hook idiom that
+# rules out pydocstyle's D family. darglint/darglint2 were evaluated and
+# rejected (archived/stale).
+style = "google"
+skip-checking-short-docstrings = true
+
+[tool.djlint]
+profile = "jinja"
+# Tune if Frappe-flavored pages trip SEO/inline rules that don't apply to
+# desk pages, e.g.: ignore = "H030,H021"
 
 [tool.ruff.format]
 quote-style = "double"

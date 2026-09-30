@@ -1,0 +1,35 @@
+name: PR Size
+
+# Advisory-only PR size labels (docs/research/2026-09-30-review-simplicity-tooling.md):
+# size judgment belongs to reviewers (Google eng-practices), never a hard
+# gate — generated DocType JSON / lockfiles would false-positive one.
+# fail_if_xl stays false. The convention itself lives in README's
+# Contributing section.
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+permissions:
+  pull-requests: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  label:
+    runs-on: ubuntu-latest
+    name: Label PR size
+    steps:
+      # Hash-pinned (zizmor unpinned-uses); v1.11.1. (Pin the tag's peeled
+      # commit, not the floating v1 ref: v1 is an annotated tag whose tag
+      # object is not a commit, which zizmor flags as impostor-commit.)
+      - uses: CodelyTV/pr-size-labeler@4e3aa0f77f348c8066513d453515316ffa01a607
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          xs_max_size: "50"
+          s_max_size: "200"
+          m_max_size: "500"
+          l_max_size: "1000"
+          fail_if_xl: "false"

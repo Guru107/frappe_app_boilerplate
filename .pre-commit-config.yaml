@@ -105,6 +105,25 @@ repos:
     hooks:
       - id: codespell
 
+  # Docstring correctness (params match signature), not coverage — config in
+  # pyproject.toml [tool.pydoclint] (ADR 0005).
+  - repo: https://github.com/jsh9/pydoclint
+    rev: 0.10.1
+    hooks:
+      - id: pydoclint
+        args: [--style=google]
+
+  # Jinja template lint. Lint only — no reformat hook: templates/includes/
+  # is deliberately unformatted (may carry jinja), and adopting djLint's
+  # formatter is a separate decision. Dormant until templates exist; arms
+  # itself in derived apps.
+  - repo: https://github.com/djlint/djLint
+    rev: v1.46.3
+    hooks:
+      - id: djlint-jinja
+        args: [--lint]
+        files: ^frappe_app_boilerplate/(templates|www)/.*\.html$
+
 ci:
     autoupdate_schedule: weekly
     skip: []

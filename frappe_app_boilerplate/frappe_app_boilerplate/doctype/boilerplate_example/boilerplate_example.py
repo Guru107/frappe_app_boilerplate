@@ -22,5 +22,3 @@ class BoilerplateExample(Document):
 		enabled: DF.Check
 		title: DF.Data
 	# end: auto-generated types
-
-	pass
