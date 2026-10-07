@@ -5,13 +5,19 @@ name: PR Size
 # gate — generated DocType JSON / lockfiles would false-positive one.
 # fail_if_xl stays false. The convention itself lives in README's
 # Contributing section.
+#
+# Forked PRs are skipped (read-only token can't label); pull_request_target
+# would work but trips zizmor's dangerous-triggers — labeling isn't worth a
+# suppression. Labels are created if missing, so derived apps work out of
+# the box.
 
 on:
   pull_request:
-    types: [opened, synchronize]
+    types: [opened, synchronize, reopened]
 
 permissions:
   pull-requests: write
+  issues: write # creating the size/* labels on first run
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -21,7 +27,17 @@ jobs:
   label:
     runs-on: ubuntu-latest
     name: Label PR size
+    # Fork PRs get a read-only token; skip instead of failing on the 403.
+    if: github.event.pull_request.head.repo.full_name == github.repository
     steps:
+      - name: Ensure size labels exist
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          for size in xs s m l xl; do
+            gh label create "size/$size" --color fbca04 --description "PR size: $size" 2>/dev/null || true
+          done
+
       # Hash-pinned (zizmor unpinned-uses); v1.11.1. (Pin the tag's peeled
       # commit, not the floating v1 ref: v1 is an annotated tag whose tag
       # object is not a commit, which zizmor flags as impostor-commit.)

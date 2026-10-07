@@ -122,6 +122,10 @@ repos:
     hooks:
       - id: djlint-jinja
         args: [--lint]
+        # The hook manifest's types_or is [jinja] (.jinja/.j2 only) — Frappe
+        # templates are .html, so override the type filter or the hook never
+        # matches (files: and types_or: intersect).
+        types_or: [html]
         files: ^frappe_app_boilerplate/(templates|www)/.*\.html$
 
 ci:
