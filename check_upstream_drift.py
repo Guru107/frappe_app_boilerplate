@@ -27,7 +27,7 @@ from typing import NoReturn
 # Fallback upstream source for local runs (the scheduled workflow's
 # UPSTREAM_URL env var is the single edit point; this default and the history
 # link derived from it follow along when the workflow passes --url).
-UPSTREAM_URL = "https://raw.githubusercontent.com/frappe/frappe/develop/frappe/utils/boilerplate.py"
+UPSTREAM_URL = "https://raw.githubusercontent.com/frappe/frappe/version-16/frappe/utils/boilerplate.py"
 
 BASELINE_FILE = "docs/upstream/boilerplate.py"
 DEFAULT_REPORT_FILE = "drift-report.md"

@@ -410,10 +410,6 @@ app_description = "{app_description}"
 app_email = "{app_email}"
 app_license = "{app_license}"
 
-# Send non-GET requests for this app's endpoints as native `application/json`
-# bodies instead of form-encoded, per-key JSON-stringified values.
-use_json_request_body = True
-
 # Apps
 # ------------------
 
@@ -483,14 +479,6 @@ use_json_request_body = True
 # 	"Role": "home_page"
 # }}
 
-# Setup Wizard
-# ------------
-
-# open a fresh site's setup in this app's own UI instead of the desk wizard.
-# must be a non-desk route (not under /desk or /app); to customize setup within
-# desk, use setup_wizard_stages / setup_wizard_complete instead.
-# setup_wizard_url = "/{app_name}/setup"
-
 # Generators
 # ----------
 
@@ -521,17 +509,6 @@ use_json_request_body = True
 # before_uninstall = "{app_name}.uninstall.before_uninstall"
 # after_uninstall = "{app_name}.uninstall.after_uninstall"
 
-# Disable / Enable
-# ----------------
-# Called when this app is logically disabled or re-enabled on a site,
-# without uninstalling it. Use this to hide/restore fields this app adds
-# to other apps' doctypes.
-
-# before_disable = "{app_name}.uninstall.before_disable"
-# after_disable = "{app_name}.uninstall.after_disable"
-# before_enable = "{app_name}.install.before_enable"
-# after_enable = "{app_name}.install.after_enable"
-
 # Integration Setup
 # ------------------
 # To set up dependencies/integrations with other apps
@@ -553,11 +530,6 @@ use_json_request_body = True
 # To hook into the build process
 
 # after_build = "{app_name}.build.after_build"
-
-# To hook into the build process of other apps
-# The list of apps being built is passed as an argument
-
-# after_app_build = "{app_name}.build.after_app_build"
 
 # Desk Notifications
 # ------------------
@@ -662,8 +634,6 @@ use_json_request_body = True
 # before_job = ["{app_name}.utils.before_job"]
 # after_job = ["{app_name}.utils.after_job"]
 
-# after_file_upload = ["{app_name}.utils.after_file_upload"]
-
 # User Data Protection
 # --------------------
 
@@ -696,10 +666,7 @@ use_json_request_body = True
 # ]
 
 # Automatically update python controller files with type annotations for this app.
-export_python_type_annotations = True
-
-# Require all whitelisted methods to have type annotations
-require_type_annotated_api_methods = True
+# export_python_type_annotations = True
 
 # default_log_clearing_doctypes = {{
 # 	"Logging DocType Name": 30  # days to retain logs
@@ -878,14 +845,10 @@ jobs:
 
 patches_template = """[pre_model_sync]
 # Patches added in this section will be executed before doctypes are migrated
-# Read docs to understand patches: https://docs.frappe.io/framework/user/en/database-migrations
+# Read docs to understand patches: https://frappeframework.com/docs/v14/user/en/database-migrations
 
 [post_model_sync]
-# Patches added in this section will be executed after doctypes are migrated
-
-[post_fixture_sync]
-# Patches added in this section will be executed after fixtures and customizations
-# (Custom Field, Property Setter, etc) are synced"""
+# Patches added in this section will be executed after doctypes are migrated"""
 
 
 precommit_template = """exclude: 'node_modules|.git'
@@ -946,6 +909,7 @@ repos:
         exclude: |
             (?x)^(
                 {app_name}/public/dist/.*|
+                cypress/.*|
                 .*node_modules.*|
                 .*boilerplate.*|
                 {app_name}/templates/includes/.*|

@@ -67,11 +67,14 @@ This starter deliberately ships without:
 - **Upstream drift**: `.github/workflows/upstream-drift.yml` runs weekly
   (Mondays 05:17 UTC) and on manual dispatch. It diffs the vendored baseline
   (`docs/upstream/boilerplate.py`) against upstream's live
-  `frappe/utils/boilerplate.py` and opens — or updates — a `needs-triage`
-  issue on drift, closing it automatically once the baseline matches again.
-  Single edit points: the cron line (schedule) and the `UPSTREAM_URL` env var
-  (upstream source). To resolve drift, re-vendor the baseline and re-sync the
-  repo's template surfaces.
+  `frappe/utils/boilerplate.py` on the newest supported Frappe major's
+  branch (`version-16` today — deliberately not `develop`, which drifts
+  toward the next major) and opens — or updates — a `needs-triage` issue on
+  drift, closing it automatically once the baseline matches again. Single
+  edit points: the cron line (schedule) and the `UPSTREAM_URL` env var
+  (upstream source — bump it when the CI matrix gains a major, and re-vendor
+  the baseline in the same commit). To resolve drift, re-vendor the baseline
+  and re-sync the repo's template surfaces.
 - **Releasing the starter itself**: push semver tags (`vX.Y.Z`) on `main`
   manually. There is deliberately no release automation — the starter is a
   template repo, not a package installed from an index.

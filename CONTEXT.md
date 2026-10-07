@@ -34,8 +34,10 @@ security scanning specifically is composed.
 
 **Upstream drift**
 Divergence between this repo and what the current upstream app generator
-(`frappe/utils/boilerplate.py` on frappe's `develop` branch) would produce
-for `bench new-app`. The starter's anti-decay mechanism: a weekly workflow
+(`frappe/utils/boilerplate.py` on the newest supported Frappe major's
+branch — `version-16` today, deliberately not `develop`, which drifts
+toward the next major) would produce for `bench new-app`. The starter's
+anti-decay mechanism: a weekly workflow
 (`.github/workflows/upstream-drift.yml`) diffs the vendored byte-exact
 baseline (`docs/upstream/boilerplate.py`) against live upstream and opens —
 or updates — a `needs-triage` issue on drift, closing it once resolved.

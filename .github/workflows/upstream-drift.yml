@@ -18,7 +18,11 @@ name: Upstream Drift
 #
 # Single obvious edit points:
 #   * schedule — the cron line below
-#   * upstream — the UPSTREAM_URL env var on the drift job
+#   * upstream — the UPSTREAM_URL env var on the drift job. It tracks the
+#     newest supported Frappe major's branch (version-16 today, NOT develop:
+#     develop drifts toward the next major and would flag template changes a
+#     v15/v16 starter must not adopt). Bump it when the CI matrix gains a
+#     major — and re-vendor the baseline in the same commit.
 #
 # This workflow is template-only: rename.py deletes it (plus the check script
 # and the baseline) from derived apps, which intentionally diverge from the
@@ -44,7 +48,7 @@ jobs:
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       # THE upstream-source edit point:
-      UPSTREAM_URL: https://raw.githubusercontent.com/frappe/frappe/develop/frappe/utils/boilerplate.py
+      UPSTREAM_URL: https://raw.githubusercontent.com/frappe/frappe/version-16/frappe/utils/boilerplate.py
       DRIFT_ISSUE_TITLE: "Upstream drift: frappe/utils/boilerplate.py"
     steps:
       - name: Clone
