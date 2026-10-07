@@ -70,7 +70,6 @@ repos:
         exclude: |
             (?x)^(
                 frappe_app_boilerplate/public/dist/.*|
-                cypress/.*|
                 .*node_modules.*|
                 .*boilerplate.*|
                 frappe_app_boilerplate/templates/includes/.*|
