@@ -23,6 +23,10 @@ name: Upstream Drift
 #     develop drifts toward the next major and would flag template changes a
 #     v15/v16 starter must not adopt). Bump it when the CI matrix gains a
 #     major — and re-vendor the baseline in the same commit.
+#     version-15 is deliberately NOT tracked: its template is frozen
+#     (bugfix-only until EOL end-2027) and the v15 CI leg proves our
+#     v16-shaped app RUNS on the v15 framework — it was never a
+#     template-compat leg (ADR 0002).
 #
 # This workflow is template-only: rename.py deletes it (plus the check script
 # and the baseline) from derived apps, which intentionally diverge from the
