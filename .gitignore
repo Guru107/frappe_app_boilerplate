@@ -54,6 +54,9 @@ jspm_packages/
 # Aider AI Chat
 .aider*
 
-# Local agent tooling
-.codegraph/
-.serena/
+# Dot directories (tool caches, agent tooling, future tool dirs) — blanket
+# ignore. .github/ stays tracked (workflows live there); .git is never
+# tracked by git regardless. Repo config lives in dot FILES (.editorconfig,
+# .pre-commit-config.yaml, .semgrepignore, ...), which this doesn't touch.
+.*/
+!/.github/
